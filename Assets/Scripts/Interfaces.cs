@@ -23,7 +23,7 @@ public interface IStack {
 
 public interface IPrototypeEntity {
 	string Name { get; }
-	GameObject Object { get; }
+	string Object { get; }
 
 	IPrototypeItem ItemOnPickup { get; }
 }

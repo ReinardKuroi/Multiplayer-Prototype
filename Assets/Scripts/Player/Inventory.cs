@@ -49,7 +49,6 @@ namespace CharacterInventory {
 		readonly string name;
 		readonly bool stackable;
 		readonly int stacksize;
-		readonly IPrototypeEntity entity;
 
 		public string Name { get { return name; } }
 		public bool Stackable { get { return stackable; } }
@@ -57,13 +56,12 @@ namespace CharacterInventory {
 					return stacksize;
 				else
 					return 1;} }
-		public IPrototypeEntity EntityOnPlace { get { return entity; } }
+		public IPrototypeEntity EntityOnPlace { get { return DataManagement.Instance.GetEntity (name); } }
 
 		public PrototypeItem (string Name, bool Stackable = true, int StackSize = 64) {
 			name = Name;
 			stackable = Stackable;
 			stacksize = StackSize;
-			entity = DataManagement.Instance.GetEntity (name);
 		}
 
 		public override int GetHashCode () {
@@ -96,19 +94,16 @@ namespace CharacterInventory {
 
 	public class PrototypeEntity : IPrototypeEntity {
 		string name;
-		GameObject obj;
-
-		IPrototypeItem item;
+		string obj;
 
 		public string Name { get { return name; } }
-		public GameObject Object { get { return obj; } }
+		public string Object { get { return obj; } }
 
-		public IPrototypeItem ItemOnPickup { get { return item; } }
+		public IPrototypeItem ItemOnPickup { get { return DataManagement.Instance.GetItem (name); } }
 
-		public PrototypeEntity (string Name, GameObject Object = null) {
+		public PrototypeEntity (string Name, string Object = "") {
 			name = Name;
 			obj = Object;
-			item = DataManagement.Instance.GetItem (name);
 		}
 
 		public override int GetHashCode () {
@@ -199,55 +194,6 @@ namespace CharacterInventory {
 
 		public static implicit operator bool (Stack me) {
 			return me != null;
-		}
-	}
-
-	public class DataManagement : IDataManagement {
-		protected static DataManagement instance = new DataManagement ();
-		public static DataManagement Instance { get { return instance; } }
-
-		Dictionary<string, IPrototypeItem> itemData = new Dictionary<string, IPrototypeItem> ();
-		Dictionary<string, IPrototypeEntity> entityData = new Dictionary<string, IPrototypeEntity> ();
-
-		public Dictionary<string, IPrototypeItem> ItemData { get { return itemData; } }
-		public Dictionary<string, IPrototypeEntity> EntityData { get { return entityData; } }
-
-		public IPrototypeItem GetItem (string name) {
-			if (itemData.ContainsKey (name)) {
-				IPrototypeItem item = ItemData [name];
-				return item;
-			}
-			return null;
-		}
-
-		public IPrototypeEntity GetEntity (string name) {
-			if (entityData.ContainsKey (name)) {
-				IPrototypeEntity entity = entityData [name];
-				return entity;
-			}
-			return null;
-		}
-
-		public void Load () {
-			List<IPrototypeItem> items = new List<IPrototypeItem> ();
-			List<IPrototypeEntity> entities = new List<IPrototypeEntity> ();
-
-			SaveLoad.LoadFromAssets<List<IPrototypeItem>> (ref items, "items.json");
-			SaveLoad.LoadFromAssets<List<IPrototypeEntity>> (ref entities, "entites.json");
-
-			foreach (IPrototypeItem i in items) {
-				if (!itemData.ContainsKey (i.Name))
-					itemData.Add (i.Name, i);
-				else
-					Debug.LogWarningFormat ("Trying to load an item : <color=red>{0}</color> , but a duplicate already exists!", i.Name.ToUpper ());
-			}
-				
-			foreach (IPrototypeEntity e in entities) {
-				if (!entityData.ContainsKey (e.Name))
-					entityData.Add (e.Name, e);
-				else
-					Debug.LogWarningFormat ("Trying to load an entity : <color=red>{0}</color> , but a duplicate already exists!", e.Name.ToUpper ());
-			}
 		}
 	}
 }
