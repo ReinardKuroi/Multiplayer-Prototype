@@ -34,3 +34,4 @@ sysinfo.txt
 *.unitypackage
 Assets/Photon/PhotonUnityNetworking/Resources/PhotonServerSettings.asset
 Assets/Photon/PhotonUnityNetworking/Resources/PhotonServerSettings.asset.meta
+Assets/Photon/PhotonUnityNetworking/Resources/PhotonServerSettings.asset
