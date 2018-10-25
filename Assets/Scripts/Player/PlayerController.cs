@@ -36,13 +36,10 @@ public class PlayerController : MonoBehaviour {
 	float pitch;
 	float yaw;
 
-	Transform currentItem;
-	Transform itemParent;
-
 	public Motor CharacterPosition { get; set; }
 	public Motor LastPosition { get; set; }
 	public Hand CharacterHolding { get; set; }
-	InputManager iManager;
+	public InputManager iManager { get; set; }
 
 	void Awake () {
 		photonView = GetComponent<PhotonView> ();
