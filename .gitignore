@@ -32,3 +32,5 @@ sysinfo.txt
 # Builds
 *.apk
 *.unitypackage
+/[Aa]ssets//[Pp]hoton//[Pp]hoton[Uu]nity[Nn]etworking/Resources*
+/[Aa]ssets//[Pp]hoton//[Pp]hoton[Uu]nity[Nn]etworking/Resources*
