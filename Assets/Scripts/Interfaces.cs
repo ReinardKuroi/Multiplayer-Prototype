@@ -6,6 +6,7 @@ using IManager;
 
 public interface IPrototypeItem {
 	string Name { get; }
+	string Type { get; }
 	bool Stackable { get; }
 	int StackSize { get; }
 
@@ -13,12 +14,12 @@ public interface IPrototypeItem {
 }
 
 public interface IStack {
-	int Size { get; }
-	bool IsFull { get; }
-	 
-	IPrototypeItem Item { get; }
+	int Size { get; set; }
+	string Item { get; }
+	IPrototypeItem Prototype { get; }
 
 	int Combine (IStack stack);
+	int Subtract (IStack stack);
 	bool SetStack (IStack stack);
 	bool SwapStack (ref IStack stack);
 }
@@ -31,10 +32,12 @@ public interface IPrototypeEntity {
 }
 
 public interface ICharacterInventory {
+	string Type { get; }
 	List<IStack> Contents { get; }
 
+	bool CanInsert (IStack stack);
 	int Insert (IStack stack);
-//	int Remove (IStack stack);
+	int Remove (IStack stack);
 }
 
 public interface IDataManagement {

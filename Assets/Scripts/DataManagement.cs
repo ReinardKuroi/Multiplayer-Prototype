@@ -13,40 +13,78 @@ public class DataManagement : IDataManagement {
 	public Dictionary<string, IPrototypeEntity> EntityData { get { return entityData; } }
 
 	public IPrototypeItem GetItem (string name) {
-		if (itemData.ContainsKey (name)) {
-			IPrototypeItem item = ItemData [name];
-			return item;
-		}
+		if (itemData.ContainsKey (name))
+			return itemData [name];
+		Debug.LogWarningFormat ("Trying to get prototype: <color=red>{0}</color>, but it's missing!", name);
 		return null;
 	}
 
 	public IPrototypeEntity GetEntity (string name) {
-		if (entityData.ContainsKey (name)) {
-			IPrototypeEntity entity = entityData [name];
-			return entity;
-		}
+		if (entityData.ContainsKey (name))
+			return entityData [name];
+		Debug.LogWarningFormat ("Trying to get prototype: <color=red>{0}</color>, but it's missing!", name);
 		return null;
 	}
 
 	public void Load () {
-		List<IPrototypeItem> items = new List<IPrototypeItem> ();
-		List<IPrototypeEntity> entities = new List<IPrototypeEntity> ();
+		List<ItemSerialized> items = new List<ItemSerialized> ();
+		List<EntitySerialized> entities = new List<EntitySerialized> ();
 
 		SaveLoad.LoadFromAssets (ref items, "items.json");
 		SaveLoad.LoadFromAssets (ref entities, "entities.json");
 
-		foreach (IPrototypeItem i in items) {
+		foreach (ItemSerialized i in items) {
 			if (!itemData.ContainsKey (i.Name))
 				itemData.Add (i.Name, i);
 			else
 				Debug.LogWarningFormat ("Trying to load an item : <color=red>{0}</color> , but a duplicate already exists!", i.Name.ToUpper ());
 		}
 
-		foreach (IPrototypeEntity e in entities) {
+		foreach (EntitySerialized e in entities) {
 			if (!entityData.ContainsKey (e.Name))
 				entityData.Add (e.Name, e);
 			else
 				Debug.LogWarningFormat ("Trying to load an entity : <color=red>{0}</color> , but a duplicate already exists!", e.Name.ToUpper ());
 		}
+	}
+}
+
+[System.Serializable]
+public class ItemSerialized : IPrototypeItem {
+	[SerializeField]
+	string name;
+	public string Name { get { return name; } set {name = value; } }
+	[SerializeField]
+	string type;
+	public string Type { get { return type; } set { type = value; } }
+	[SerializeField]
+	bool stackable;
+	public bool Stackable { get { return stackable; } set { stackable = value; } }
+	[SerializeField]
+	int stacksize;
+	public int StackSize { get { return stacksize; } set { stacksize = value; } }
+	public IPrototypeEntity EntityOnPlace { get; }
+
+	public ItemSerialized (string Name = null, string Type = null, bool Stackable = true, int StackSize = 64) {
+		this.Name = Name;
+		this.Type = Type;
+		this.Stackable = Stackable;
+		this.StackSize = StackSize;
+	}
+}
+
+[System.Serializable]
+public class EntitySerialized : IPrototypeEntity {
+	[SerializeField]
+	string name;
+	public string Name { get { return name; } set { name = value; } }
+	[SerializeField]
+	string obj;
+	public string Object { get { return obj; } set { obj = value; } }
+	public IPrototypeItem ItemOnPickup { get; }
+
+	public EntitySerialized (string Name, string Object = null) {
+		this.Name = Name;
+		this.Object = Object;
 	}
 }

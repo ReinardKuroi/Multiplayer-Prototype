@@ -4,40 +4,52 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace CharacterInventory {
-
 	public class Inventory : ICharacterInventory {
 		int size;
+		public string Type { get; protected set; }
 		List<IStack> contents = new List<IStack> ();
 		public List<IStack> Contents { get { return contents; } }
 		public int Size { get { return size; } }
 
-		public Inventory (int i) {
+		public Inventory (int i, string type = null) {
 			size = i;
+			Type = type;
 		}
 
 		public int Insert (IStack stack) { //return amount actually inserted
-			contents.RemoveAll (x => x.Item == null || x.Size == 0);
-			if (stack != null) {
+			Cleanup ();
+			if (!CanInsert (stack))
+				return 0;
+			if ((stack != null) && (stack.Item != null) && (stack.Size > 0)) {
 				IStack similar = contents.FindLast (x => x.Item == stack.Item);
-				if (((similar != null) && similar.IsFull) || (similar == null)) {
+				if (((similar != null) && (similar.Size >= similar.Prototype.StackSize)) || (similar == null)) {
 					if (contents.Count < size) {
 						Contents.Add (stack);
 						return stack.Size;
 					}
-				} else
-					return similar.Combine (stack);
+				} else {
+					return stack.Size - similar.Combine (stack);
+				}
 			}
 			return 0;
 		}
-		/*
-		public int Remove (IStack stack) {
-			if (stack != null) {
+
+		public int Remove (IStack stack) { //return amount actually removed
+			Cleanup ();
+			if ((stack != null) && (stack.Item != null) && (stack.Size > 0)) {
 				IStack similar = contents.FindLast (x => x.Item == stack.Item);
-				if ((similar != null)) {
-					
-				}
+				if ((similar != null))
+					return similar.Subtract (stack);
 			}
-		}*/
+			return 0;
+		}
+
+		public bool CanInsert (IStack stack) {
+			Cleanup ();
+			if (stack.Prototype.Type == this.Type || this.Type == null)
+				return true;
+			return false;
+		}
 
 		void Cleanup () {
 			contents.RemoveAll (x => x.Item == null || x.Size == 0);
@@ -50,14 +62,15 @@ namespace CharacterInventory {
 		readonly int stacksize;
 
 		public string Name { get { return name; } }
+		public string Type { get; protected set; }
 		public bool Stackable { get { return stackable; } }
 		public int StackSize { get { if (stackable)
 					return stacksize;
 				else
 					return 1;} }
-		public IPrototypeEntity EntityOnPlace { get { return DataManagement.Instance.GetEntity (name); } }
+		public IPrototypeEntity EntityOnPlace { get { return DataManagement.Instance.GetEntity (name) as PrototypeEntity; } }
 
-		public PrototypeItem (string Name, bool Stackable = true, int StackSize = 64) {
+		public PrototypeItem (string Name = null, bool Stackable = true, int StackSize = 64) {
 			name = Name;
 			stackable = Stackable;
 			stacksize = StackSize;
@@ -98,9 +111,9 @@ namespace CharacterInventory {
 		public string Name { get { return name; } }
 		public string Object { get { return obj; } }
 
-		public IPrototypeItem ItemOnPickup { get { return DataManagement.Instance.GetItem (name); } }
+		public IPrototypeItem ItemOnPickup { get { return DataManagement.Instance.GetItem (name) as PrototypeItem; } }
 
-		public PrototypeEntity (string Name, string Object = "") {
+		public PrototypeEntity (string Name = null, string Object = null) {
 			name = Name;
 			obj = Object;
 		}
@@ -133,39 +146,41 @@ namespace CharacterInventory {
 		}
 	}
 
-	public class Stack : IStack {
-		IPrototypeItem item;
+	public class ItemStack : IStack {
 		int size;
+		string item;
 
-		public IPrototypeItem Item { get { return item; } }
-		public int Size { get { return size; } }
-		public bool IsFull { get { return size >= item.StackSize; } }
+		public string Item { get {return item; } }
+		public int Size { get { return size; } set { size = (value > Prototype.StackSize) ? Prototype.StackSize : value; }}
+		public IPrototypeItem Prototype { get { return DataManagement.Instance.GetItem(item); } }
 
-		public Stack (IPrototypeItem Item = null, int Size = 0) {
+		public ItemStack (string Item = null, int Size = 0) {
 			this.item = Item;
-			if (Size > item.StackSize)
-				this.size = item.StackSize;
-			else
-				this.size = Size;
+			this.Size = Size;
+			Debug.LogFormat ("Created new stack of <color=brown>{0} x {1}</color>", item, size);
 		}
 
 		public int Combine (IStack stack) {
-			int total = this.size + stack.Size;
-			if (total > this.item.StackSize)
-				this.size = item.StackSize;
-			else
-				this.size = total;
-			return total - this.size;
+			int total = size + stack.Size;
+			size = (total > Prototype.StackSize) ? Prototype.StackSize : total;
+			return total - size;
+		}
+
+		public int Subtract (IStack stack) {//FIXME
+			int result = (size < stack.Size) ? 0 : size - stack.Size;
+			int removed = size - result;
+			size = result;
+			return removed;
 		}
 
 		public bool SetStack (IStack stack) {
-			this.item = stack.Item;
-			this.size = stack.Size;
+			item = stack.Item;
+			size = stack.Size;
 			return true;
 		}
 
 		public bool SwapStack (ref IStack stack) {
-			Stack temp = new Stack();
+			ItemStack temp = new ItemStack();
 			temp.SetStack (this);
 			this.SetStack (stack);
 			stack.SetStack (temp);
@@ -177,23 +192,23 @@ namespace CharacterInventory {
 		}
 
 		public override bool Equals (object obj) {
-			if (!(obj is Stack))
+			if (!(obj is ItemStack))
 				return false;
-			var other = obj as Stack;
+			var other = obj as ItemStack;
 			if (!(this.item == other.Item && this.size == other.Size))
 				return false;
 			return true;
 		}
 
-		public static bool operator ==(Stack x, Stack y) {
+		public static bool operator ==(ItemStack x, ItemStack y) {
 			return x.Equals (y);
 		}
 
-		public static bool operator !=(Stack x, Stack y) {
+		public static bool operator !=(ItemStack x, ItemStack y) {
 			return !x.Equals (y);
 		}
 
-		public static implicit operator bool (Stack me) {
+		public static implicit operator bool (ItemStack me) {
 			return me != null;
 		}
 	}

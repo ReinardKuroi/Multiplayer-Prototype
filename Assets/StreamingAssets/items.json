@@ -1,5 +1,10 @@
 {
     "Items": [
-        {}
+        {
+            "name": "Test Item",
+            "type": "",
+            "stackable": true,
+            "stacksize": 64
+        }
     ]
 }
