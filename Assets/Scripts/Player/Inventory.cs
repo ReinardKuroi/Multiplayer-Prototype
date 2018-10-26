@@ -21,15 +21,18 @@ namespace CharacterInventory {
 			if (!CanInsert (stack))
 				return 0;
 			if ((stack != null) && (stack.Item != null) && (stack.Size > 0)) {
+				int accumulate = 0;
 				IStack similar = contents.FindLast (x => x.Item == stack.Item);
 				if (((similar != null) && (similar.Size >= similar.Prototype.StackSize)) || (similar == null)) {
 					if (contents.Count < size) {
 						Contents.Add (stack);
-						return stack.Size;
+						accumulate += stack.Size;
 					}
 				} else {
-					return stack.Size - similar.Combine (stack);
+					stack.Size = similar.Combine (stack);
+					accumulate += Insert (stack);
 				}
+				return accumulate;
 			}
 			return 0;
 		}
@@ -37,9 +40,13 @@ namespace CharacterInventory {
 		public int Remove (IStack stack) { //return amount actually removed
 			Cleanup ();
 			if ((stack != null) && (stack.Item != null) && (stack.Size > 0)) {
+				int accumulate = 0;
 				IStack similar = contents.FindLast (x => x.Item == stack.Item);
-				if ((similar != null))
-					return similar.Subtract (stack);
+				if ((similar != null)) {
+					stack.Size -= similar.Subtract (stack);
+					accumulate += Remove (stack);
+				}
+				return accumulate;
 			}
 			return 0;
 		}
@@ -151,8 +158,26 @@ namespace CharacterInventory {
 		string item;
 
 		public string Item { get {return item; } }
-		public int Size { get { return size; } set { size = (value > Prototype.StackSize) ? Prototype.StackSize : value; }}
-		public IPrototypeItem Prototype { get { return DataManagement.Instance.GetItem(item); } }
+		public int Size {
+			get { return size; }
+			set {
+				if (value > Prototype.StackSize)
+					size = Prototype.StackSize;
+				else if (value < 0)
+					size = 0;
+				else
+					size = value;
+			}
+		}
+		public IPrototypeItem Prototype {
+			get {
+				IPrototypeItem i = DataManagement.Instance.GetItem(item);
+				if (i != null)
+					return i;
+				else
+					throw new Exception ();
+			}
+		}
 
 		public ItemStack (string Item = null, int Size = 0) {
 			this.item = Item;
@@ -160,13 +185,13 @@ namespace CharacterInventory {
 			Debug.LogFormat ("Created new stack of <color=brown>{0} x {1}</color>", item, size);
 		}
 
-		public int Combine (IStack stack) {
+		public int Combine (IStack stack) { //returns whats left to add
 			int total = size + stack.Size;
 			size = (total > Prototype.StackSize) ? Prototype.StackSize : total;
 			return total - size;
 		}
 
-		public int Subtract (IStack stack) {//FIXME
+		public int Subtract (IStack stack) { //returns whats was removed
 			int result = (size < stack.Size) ? 0 : size - stack.Size;
 			int removed = size - result;
 			size = result;

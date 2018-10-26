@@ -36,34 +36,16 @@ public class Test : MonoBehaviour {
 		Debug.Log ("Created a new inventory");
 
 		ItemStack stack = new ItemStack ("Test Item", 25);
-		Insert (inv, stack);
+		inv.Insert (stack);
 		foreach (IStack i in inv.Contents)
 			Debug.LogFormat ("Inventory contents: <color=blue>{0} x {1}</color>", i.Item, i.Size);
 		stack = new ItemStack ("Test Item", 58);
-		Insert (inv, stack);
+		inv.Insert (stack);
 		foreach (IStack i in inv.Contents)
 			Debug.LogFormat ("Inventory contents: <color=blue>{0} x {1}</color>", i.Item, i.Size);
 		stack = new ItemStack ("Test Item", 50);
-		Remove (inv, stack);
+		inv.Remove (stack);
 		foreach (IStack i in inv.Contents)
 			Debug.LogFormat ("Inventory contents: <color=blue>{0} x {1}</color>", i.Item, i.Size);
-	}
-
-	void Insert (ICharacterInventory inv, IStack s) {
-		int inserted = inv.Insert (s);
-		Debug.LogFormat ("Inserted <color=green>{0} x {1}</color> in inventory", s.Item, inserted);
-		if (inserted < s.Size) {
-			s.Size -= inserted;
-			Insert (inv, s);
-		}
-	}
-
-	void Remove (ICharacterInventory inv, IStack s) {
-		int removed = inv.Remove (s);
-		Debug.LogFormat ("Removed <color=red>{0} x {1}</color> in inventory", s.Item, removed);
-		if (removed < s.Size) {
-			s.Size -= removed;
-			Remove (inv, s);
-		}
 	}
 }
