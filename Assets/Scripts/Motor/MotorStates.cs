@@ -3,69 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace CharacterMotor {
-	public class Motor {
-		protected PlayerController PController { get; set; }
-		protected CharacterController Controller { get; set; }
-		protected Transform Facing { get; set; }
-		protected float Speed { get { return 5f; } }
-		protected float JumpHeight { get { return 3f; } }
-
-		protected float Gravity { get { return Physics.gravity.y; } }
-		protected float VelocityY { get; set; }
-
-		public Motor (PlayerController p) {
-			PController = p;
-			Controller = p.GetComponent<CharacterController> ();
-			Facing = p.GetComponent<Transform> ();
-			VelocityY = 0f;
-		}
-
-		public virtual void Walk (Vector2 input) {
-			Vector3 right = (new Vector3 (Facing.right.x, 0, Facing.right.z)).normalized;
-			Vector3 forward = (new Vector3 (Facing.forward.x, 0, Facing.forward.z)).normalized;
-
-			Vector3 direction = right * input.x + forward * input.y;
-			Vector3 movement = (direction * Time.deltaTime * Speed);
-			Controller.Move (movement);
-		}
-
-		public virtual void Fall () {
-			Controller.Move (new Vector3 (0f, VelocityY, 0f) * Time.deltaTime);
-		}
-
-		public delegate bool CheckFunction ();
-		public virtual void Transition (CheckFunction f) {}
-
-		public virtual void SetState (Motor state) {
-			if (state.GetType () == this.GetType () || state == null)
-				return;
-			
-			ExitState ();
-			PController.LastPosition = this;
-			PController.CharacterPosition = state;
-			PController.CharacterPosition.EnterState ();
-		}
-
-		public virtual void Jump () {}
-		public virtual void Blink () {}
-
-		public virtual void ExitState () {
-			Debug.LogFormat ("Exited state {0}", this);
-		}
-
-		public virtual void EnterState () {
-			Debug.LogFormat ("Entered state {0}", this);
-		}
-
-		public static implicit operator bool (Motor me) {
-			return me != null;
-		}
-	}
 	/// <summary>
 	/// Falling state. Transitions to a DoubleJump, Dash, or Ground.
 	/// </summary>
 	public class Falling : Motor {
-		public Falling (PlayerController p) : base (p) {}
+		public Falling (IMotorUser p) : base (p) {}
 
 		public override void Fall () {
 			VelocityY += Gravity * Time.deltaTime;
@@ -91,12 +33,12 @@ namespace CharacterMotor {
 	/// Jumping state. Transitions to Falling, Double Jump, Dash, or Ground.
 	/// </summary>
 	public class Jumping : Falling {
-		public Jumping (PlayerController p) : base (p) {}
+		public Jumping (IMotorUser p) : base (p) {}
 
-		public override void EnterState ()
+		public override void OnEnter ()
 		{
 			VelocityY = Mathf.Sqrt (JumpHeight * -2f * Gravity);
-			base.EnterState ();
+			base.OnEnter ();
 		}
 
 		public override void Transition (CheckFunction f)
@@ -110,7 +52,7 @@ namespace CharacterMotor {
 	/// Falling after a Double Jump. Transitions to Ground.
 	/// </summary>
 	public class FallingAfterDoubleJump : Falling {
-		public FallingAfterDoubleJump (PlayerController p) : base(p) {}
+		public FallingAfterDoubleJump (IMotorUser p) : base(p) {}
 
 		public override void Jump () {}
 	}
@@ -118,7 +60,7 @@ namespace CharacterMotor {
 	/// Double Jump. Transitions to Falling after a Double Jump, or Ground.
 	/// </summary>
 	public class DoubleJumping : Jumping {
-		public DoubleJumping (PlayerController p) : base (p) {}
+		public DoubleJumping (IMotorUser p) : base (p) {}
 
 		public override void Jump () {}
 
@@ -132,7 +74,7 @@ namespace CharacterMotor {
 	}
 
 	public class Blinking : Motor {
-		public Blinking (PlayerController p) : base (p) {}
+		public Blinking (IMotorUser p) : base (p) {}
 
 		float Drag { get { return -4f; } }
 		float Impulse { get { return 4f; } }
@@ -145,10 +87,10 @@ namespace CharacterMotor {
 			base.Walk (input);
 		}
 
-		public override void EnterState ()
+		public override void OnEnter ()
 		{
 			ExtraSpeed = Impulse;
-			base.EnterState ();
+			base.OnEnter ();
 		}
 
 		public override void Transition (CheckFunction f) {
@@ -163,7 +105,7 @@ namespace CharacterMotor {
 	}
 
 	public class Walking : Motor {
-		public Walking (PlayerController p) : base (p) {}
+		public Walking (IMotorUser p) : base (p) {}
 
 		public override void Fall ()
 		{

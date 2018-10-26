@@ -20,15 +20,19 @@ public class DataEditor : EditorWindow {
 	}
 
 	void Awake () {
-		LoadItems ();
-		LoadEntities ();
+		foreach (IPrototypeItem i in items)
+			Debug.LogFormat ("Loaded item {0}, stackable = {1}, stack size = {2}", i.Name, i.Stackable, i.StackSize);
+		foreach (IPrototypeEntity e in entities)
+			Debug.LogFormat ("Loaded entity {0}, prefab name {1}", e.Name, e.Object);
 	}
 
 	void OnGUI () {
-		if (TrueIfItems)
-			DrawItemMenu ();
-		else
-			DrawEntitiesMenu ();
+		EditorGUILayout.BeginHorizontal ();
+		if (GUILayout.Button ("Test save"))
+			TestSave ();
+		if (GUILayout.Button ("Test load"))
+			TestLoad ();
+		EditorGUILayout.EndHorizontal ();
 	}
 
 	void DrawItemMenu () {
@@ -80,6 +84,26 @@ public class DataEditor : EditorWindow {
 
 	void Edit<T> (T t) {
 		
+	}
+
+	void TestSave () {
+		Item item = new Item ("Test item"); 
+		Entity entity = new Entity ("Test entity", "EntityPrefab");
+		Debug.LogFormat ("Created item {0}, stackable = {1}, stack size = {2}", item.Name, item.Stackable, item.StackSize);
+		Debug.LogFormat ("Created entity {0}, prefab name {1}", entity.Name, entity.Object);
+		items.Add (item);
+		entities.Add (entity);
+		SaveItems ();
+		SaveEntities ();
+	}
+
+	void TestLoad () {
+		LoadItems ();
+		LoadEntities ();
+		foreach (IPrototypeItem i in items)
+			Debug.LogFormat ("Loaded item {0}, stackable = {1}, stack size = {2}", i.Name, i.Stackable, i.StackSize);
+		foreach (IPrototypeEntity e in entities)
+			Debug.LogFormat ("Loaded entity {0}, prefab name {1}", e.Name, e.Object);
 	}
 
 	void AddItem () {

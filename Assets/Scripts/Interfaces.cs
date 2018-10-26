@@ -18,7 +18,9 @@ public interface IStack {
 	 
 	IPrototypeItem Item { get; }
 
-	ICharacterInventory Inventory { get; }
+	int Combine (IStack stack);
+	bool SetStack (IStack stack);
+	bool SwapStack (ref IStack stack);
 }
 
 public interface IPrototypeEntity {
@@ -31,7 +33,8 @@ public interface IPrototypeEntity {
 public interface ICharacterInventory {
 	List<IStack> Contents { get; }
 
-	int Add (IPrototypeItem item, int amount);
+	int Insert (IStack stack);
+//	int Remove (IStack stack);
 }
 
 public interface IDataManagement {

@@ -15,32 +15,31 @@ namespace CharacterInventory {
 			size = i;
 		}
 
-		public int Add (IPrototypeItem item, int amount) {
-			Cleanup ();
-			if ((item != null ) && (amount > 0)) {
-				Stack similar = contents.FindLast (x => x.Item == item) as Stack;
-				if ((similar && similar.IsFull) || !similar) {
+		public int Insert (IStack stack) { //return amount actually inserted
+			contents.RemoveAll (x => x.Item == null || x.Size == 0);
+			if (stack != null) {
+				IStack similar = contents.FindLast (x => x.Item == stack.Item);
+				if (((similar != null) && similar.IsFull) || (similar == null)) {
 					if (contents.Count < size) {
-						Stack stack = new Stack (this, item);
-						int left = stack.Add (amount);
 						Contents.Add (stack);
-						if (left > 0)
-							return this.Add (item, left);
-						return 0;
-					} else {
-						return amount;
+						return stack.Size;
 					}
-				} else {
-					int left = similar.Add (amount);
-					if (left > 0)
-						return this.Add (item, left);
-					return 0;
+				} else
+					return similar.Combine (stack);
+			}
+			return 0;
+		}
+		/*
+		public int Remove (IStack stack) {
+			if (stack != null) {
+				IStack similar = contents.FindLast (x => x.Item == stack.Item);
+				if ((similar != null)) {
+					
 				}
 			}
-			return -1;
-		}
+		}*/
 
-		public void Cleanup () {
+		void Cleanup () {
 			contents.RemoveAll (x => x.Item == null || x.Size == 0);
 		}
 	}
@@ -115,7 +114,7 @@ namespace CharacterInventory {
 		public override bool Equals (object obj) {
 			if (!(obj is PrototypeEntity))
 				return false;
-			var other = obj as PrototypeEntity;
+			var other = obj as PrototypeEntity;   
 			if (this.GetHashCode () != other.GetHashCode ())
 				return false;
 			return true;
@@ -137,15 +136,12 @@ namespace CharacterInventory {
 	public class Stack : IStack {
 		IPrototypeItem item;
 		int size;
-		ICharacterInventory inventory;
 
 		public IPrototypeItem Item { get { return item; } }
 		public int Size { get { return size; } }
 		public bool IsFull { get { return size >= item.StackSize; } }
-		public ICharacterInventory Inventory { get { return inventory; } }
 
-		public Stack (ICharacterInventory inv, IPrototypeItem Item = null, int Size = 0) {
-			inventory = inv;
+		public Stack (IPrototypeItem Item = null, int Size = 0) {
 			this.item = Item;
 			if (Size > item.StackSize)
 				this.size = item.StackSize;
@@ -153,22 +149,27 @@ namespace CharacterInventory {
 				this.size = Size;
 		}
 
-		public int Add (int i) {
-			if (item.Stackable) {
-				int newsize = size + i;
-				if (newsize > item.StackSize) {
-					size = item.StackSize;
-					return newsize - item.StackSize;
-				} else {
-					size = newsize;
-					return 0;
-				}
-			} else
-				return -1;
+		public int Combine (IStack stack) {
+			int total = this.size + stack.Size;
+			if (total > this.item.StackSize)
+				this.size = item.StackSize;
+			else
+				this.size = total;
+			return total - this.size;
 		}
 
-		public void Clear () {
-			inventory.Contents.Remove (this);
+		public bool SetStack (IStack stack) {
+			this.item = stack.Item;
+			this.size = stack.Size;
+			return true;
+		}
+
+		public bool SwapStack (ref IStack stack) {
+			Stack temp = new Stack();
+			temp.SetStack (this);
+			this.SetStack (stack);
+			stack.SetStack (temp);
+			return true;
 		}
 
 		public override int GetHashCode () {

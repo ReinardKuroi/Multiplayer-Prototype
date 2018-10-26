@@ -6,7 +6,6 @@ using System.IO;
 using System.Text;
 
 public static class SaveLoad {
-
 	public static void LoadFromPersistent<T> (ref T obj, string fileName) where T : new() {
 		string filePath = Path.Combine (Application.persistentDataPath, fileName);
 		if (File.Exists (filePath)) {

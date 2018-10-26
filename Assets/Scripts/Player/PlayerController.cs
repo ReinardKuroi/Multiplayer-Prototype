@@ -4,13 +4,14 @@ using UnityEngine;
 using UnityEngine.UI;
 
 using CharacterMotor;
+using CharacterHand;
 using IManager;
 
 using Photon.Pun;
 using Photon.Realtime;
 
 [RequireComponent(typeof(CharacterController))]
-public class PlayerController : MonoBehaviour {
+public class PlayerController : MonoBehaviour, IMotorUser, IHandUser {
 
 	[Tooltip("Local player instance")]
 	public static GameObject LocalPlayerInstance;
@@ -38,6 +39,13 @@ public class PlayerController : MonoBehaviour {
 
 	public Motor CharacterPosition { get; set; }
 	public Motor LastPosition { get; set; }
+
+	MotorPrefs _motorprefs = new MotorPrefs {
+		speed = 5f,
+		jumpHeight = 3f
+	};
+	public MotorPrefs MPrefs { get { return _motorprefs; } }
+
 	public Hand CharacterHolding { get; set; }
 	public InputManager iManager { get; set; }
 
