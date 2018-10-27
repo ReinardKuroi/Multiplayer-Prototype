@@ -11,7 +11,7 @@ namespace IManager {
 			}
 		}
 
-		Dictionary<KeyCode, Command> CommandList;
+		Dictionary<KeyCode, Command> CommandList = new Dictionary<KeyCode, Command> ();
 
 		public void HandleInput () {
 			foreach (KeyValuePair<KeyCode, Command> kvp in CommandList) {

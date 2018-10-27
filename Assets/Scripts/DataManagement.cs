@@ -34,15 +34,19 @@ public class DataManagement : IDataManagement {
 		SaveLoad.LoadFromAssets (ref entities, "entities.json");
 
 		foreach (ItemSerialized i in items) {
-			if (!itemData.ContainsKey (i.Name))
+			if (!itemData.ContainsKey (i.Name)) {
 				itemData.Add (i.Name, i);
+				Debug.LogFormat ("Loaded item : <color=brown>{0}</color>", i.Name.ToUpper ());
+			}
 			else
 				Debug.LogWarningFormat ("Trying to load an item : <color=red>{0}</color> , but a duplicate already exists!", i.Name.ToUpper ());
 		}
 
 		foreach (EntitySerialized e in entities) {
-			if (!entityData.ContainsKey (e.Name))
+			if (!entityData.ContainsKey (e.Name)) {
 				entityData.Add (e.Name, e);
+				Debug.LogFormat ("Loaded entity : <color=brown>{0}</color>", e.Name.ToUpper ());
+			}
 			else
 				Debug.LogWarningFormat ("Trying to load an entity : <color=red>{0}</color> , but a duplicate already exists!", e.Name.ToUpper ());
 		}

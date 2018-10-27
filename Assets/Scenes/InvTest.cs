@@ -4,7 +4,7 @@ using UnityEngine;
 
 using CharacterInventory;
 
-public class Test : MonoBehaviour {
+public class InvTest : MonoBehaviour {
 
 	List<ItemSerialized> items = new List<ItemSerialized> ();
 	List<EntitySerialized> entities = new List<EntitySerialized> ();
@@ -30,7 +30,7 @@ public class Test : MonoBehaviour {
 			Debug.LogFormat ("Item: {0}, type: {1}, stackable: {2}, stacksize: {3}", i.Value.Name, i.Value.Type, i.Value.Stackable, i.Value.StackSize);
 		foreach (KeyValuePair<string, IPrototypeEntity> e in DataManagement.Instance.EntityData)
 			Debug.LogFormat ("Entity {0}, object: {1}", e.Value.Name, e.Value.Object);
-		
+
 		inv = new Inventory (5);
 
 		Debug.Log ("Created a new inventory");

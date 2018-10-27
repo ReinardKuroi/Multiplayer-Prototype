@@ -5,6 +5,7 @@ using UnityEngine.UI;
 
 using CharacterMotor;
 using CharacterHand;
+using CharacterInventory;
 using IManager;
 
 using Photon.Pun;
@@ -49,6 +50,8 @@ public class PlayerController : MonoBehaviour, IMotorUser, IHandUser {
 	public Hand CharacterHolding { get; set; }
 	public InputManager iManager { get; set; }
 
+	public Inventory CharacterBackpack { get; set; }
+
 	void Awake () {
 		photonView = GetComponent<PhotonView> ();
 		if (photonView.IsMine)
@@ -57,6 +60,7 @@ public class PlayerController : MonoBehaviour, IMotorUser, IHandUser {
 	}
 
 	void Start () {
+		DataManagement.Instance.Load ();
 		SetCamera ();
 		SetNameUI ();
 		if (photonView.IsMine) {
@@ -69,6 +73,7 @@ public class PlayerController : MonoBehaviour, IMotorUser, IHandUser {
 			Dasher = gameObject.GetComponent<Charger> ();
 			if (Dasher == null)
 				Dasher = gameObject.AddComponent<Charger> ();
+			CharacterBackpack = new Inventory (5);
 		}
 	}
 
@@ -93,6 +98,8 @@ public class PlayerController : MonoBehaviour, IMotorUser, IHandUser {
 		iManager.AddCommand (KeyCode.M, MenuCommand);
 		iManager.AddCommand (KeyCode.Mouse0, InteractCommand);
 		iManager.AddCommand (KeyCode.Mouse1, AltInteractCommand);
+		iManager.AddCommand (KeyCode.E, PickEntity);
+		iManager.AddCommand (KeyCode.X, PutEntity);
 	}
 
 	public void JumpCommand () {
@@ -159,6 +166,31 @@ public class PlayerController : MonoBehaviour, IMotorUser, IHandUser {
 	void SetNameUI () {
 		GameObject uiG = Instantiate (playerNameUI) as GameObject;
 		uiG.GetComponent<PlayerNameDisplay> ().SetTarget (this);
+	}
+
+	void PickEntity () {
+		RaycastHit hit;
+		Physics.Raycast (transform.position, transform.forward, out hit, 5f);
+		if (hit.transform != null) {
+			EntityHasItem ehi = hit.transform.gameObject.GetComponent<EntityHasItem> ();
+			if (ehi != null) {
+				IPrototypeItem item = ehi.OnInteract ();
+				ItemStack stack = new ItemStack (item.Name, 1);
+				if (CharacterBackpack.Insert (stack) != 1)
+					PhotonNetwork.Instantiate (item.EntityOnPlace.Object, transform.position + transform.forward, Quaternion.identity, 0);
+				foreach (IStack i in CharacterBackpack.Contents)
+					Debug.LogFormat ("Inventory contents: <color=blue>{0} x {1}</color>", i.Item, i.Size);
+			}
+		}
+	}
+
+	void PutEntity () {
+		IPrototypeItem item = CharacterBackpack.Contents[CharacterBackpack.Contents.Count - 1].Prototype;
+		if (item != null) {
+			PhotonNetwork.Instantiate (item.EntityOnPlace.Object, transform.position + transform.forward, Quaternion.identity, 0);
+			ItemStack stack = new ItemStack (item.Name, 1);
+			CharacterBackpack.Remove (stack);
+		}
 	}
 
 	[PunRPC]
