@@ -6,13 +6,14 @@ using UnityEngine.UI;
 using CharacterMotor;
 using CharacterHand;
 using CharacterInventory;
+using CharacterHealth;
 using IManager;
 
 using Photon.Pun;
 using Photon.Realtime;
 
 [RequireComponent(typeof(CharacterController))]
-public class PlayerController : MonoBehaviour, IMotorUser, IHandUser {
+public class PlayerController : MonoBehaviour, IMotorUser, IHandUser, IHealthUser {
 
 	[Tooltip("Local player instance")]
 	public static GameObject LocalPlayerInstance;
@@ -52,6 +53,9 @@ public class PlayerController : MonoBehaviour, IMotorUser, IHandUser {
 
 	public Inventory CharacterBackpack { get; set; }
 
+	public IHealth CharacterHP { get; set; }
+	public IArmor CharacterArmor { get; set; }
+
 	void Awake () {
 		photonView = GetComponent<PhotonView> ();
 		if (photonView.IsMine)
@@ -74,6 +78,11 @@ public class PlayerController : MonoBehaviour, IMotorUser, IHandUser {
 			if (Dasher == null)
 				Dasher = gameObject.AddComponent<Charger> ();
 			CharacterBackpack = new Inventory (5);
+			CharacterHP = new Health (this);
+			CharacterArmor = new Armor ();
+			CharacterHP.TakeDamage += () => {
+				photonView.RPC ("OnDamage", RpcTarget.Others);
+			};
 		}
 	}
 
@@ -89,6 +98,12 @@ public class PlayerController : MonoBehaviour, IMotorUser, IHandUser {
 		}
 		CharacterPosition.Fall ();
 		CharacterPosition.Transition (IsGrounded);
+	}
+
+	void Die () {
+		transform.position = new Vector3 (0f, 1f, 0f);
+		Debug.LogFormat ("Player {0} went commit died!~", photonView.Owner.NickName);
+		CharacterHP.Heal (CharacterHP.MaxHP);
 	}
 
 	void SetInputCommands () {
@@ -110,7 +125,7 @@ public class PlayerController : MonoBehaviour, IMotorUser, IHandUser {
 	public void BlinkCommand () {
 		if (Menu.InGame && (Dasher.Charges > 0)) {
 			CharacterPosition.Blink ();
-			photonView.RPC("PlayDashAudio", RpcTarget.All);
+			photonView.RPC("PlayDashAudio", RpcTarget.All, "teleports-behind-you");
 			Dasher.Use();
 		}
 	}
@@ -203,11 +218,15 @@ public class PlayerController : MonoBehaviour, IMotorUser, IHandUser {
 	}
 
 	[PunRPC]
-	void PlayDashAudio () {
+	void OnDamage () {
+		
+	}
+
+	[PunRPC]
+	void PlayAudio (string name) {
 		AudioSource source = GetComponent<AudioSource> ();
 		if (source == null)
 			source = gameObject.AddComponent<AudioSource> ();
-		string name = "teleports-behind-you";
 		AudioClip sound = Resources.Load ("Sounds/" + name, typeof(AudioClip)) as AudioClip;
 		System.Random random = new System.Random ();
 		source.pitch = 1f + ((float)random.NextDouble() - 0.5f)/5;
