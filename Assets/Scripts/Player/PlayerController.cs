@@ -171,13 +171,15 @@ public class PlayerController : MonoBehaviour, IMotorUser, IHandUser {
 	void PickEntity () {
 		RaycastHit hit;
 		Physics.Raycast (transform.position, transform.forward, out hit, 5f);
-		if (hit.transform != null) {
-			EntityHasItem ehi = hit.transform.gameObject.GetComponent<EntityHasItem> ();
-			if (ehi != null) {
-				IPrototypeItem item = ehi.OnInteract ();
+		Transform t = hit.transform;
+		if (t != null && t.CompareTag ("EHI")) {
+			EntityHasItem _e = t.GetComponent<EntityHasItem> ();
+			if (_e != null) {
+				PrototypeItem item = (PrototypeItem)_e.OnInteract ();
+				Debug.LogFormat ("Picked up item {0}", item.Name);
 				ItemStack stack = new ItemStack (item.Name, 1);
 				if (CharacterBackpack.Insert (stack) != 1)
-					PhotonNetwork.Instantiate (item.EntityOnPlace.Object, transform.position + transform.forward, Quaternion.identity, 0);
+					PhotonNetwork.Instantiate (item.Entity, t.position, t.rotation, 0);
 				foreach (IStack i in CharacterBackpack.Contents)
 					Debug.LogFormat ("Inventory contents: <color=blue>{0} x {1}</color>", i.Item, i.Size);
 			}
@@ -187,9 +189,11 @@ public class PlayerController : MonoBehaviour, IMotorUser, IHandUser {
 	void PutEntity () {
 		IPrototypeItem item = CharacterBackpack.Contents[CharacterBackpack.Contents.Count - 1].Prototype;
 		if (item != null) {
-			PhotonNetwork.Instantiate (item.EntityOnPlace.Object, transform.position + transform.forward, Quaternion.identity, 0);
+			PhotonNetwork.Instantiate (item.Entity, transform.position + transform.forward, Quaternion.identity, 0);
 			ItemStack stack = new ItemStack (item.Name, 1);
 			CharacterBackpack.Remove (stack);
+			foreach (IStack i in CharacterBackpack.Contents)
+				Debug.LogFormat ("Inventory contents: <color=blue>{0} x {1}</color>", i.Item, i.Size);
 		}
 	}
 

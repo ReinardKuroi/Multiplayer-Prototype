@@ -64,18 +64,20 @@ namespace CharacterInventory {
 	}
 
 	public class PrototypeItem : IPrototypeItem {
-		readonly string name;
-		readonly bool stackable;
-		readonly int stacksize;
+		protected readonly string name;
+		protected readonly string type;
+		protected readonly bool stackable;
+		protected readonly int stacksize;
+		protected readonly string entity;
 
 		public string Name { get { return name; } }
-		public string Type { get; protected set; }
+		public string Type { get { return type; } }
 		public bool Stackable { get { return stackable; } }
 		public int StackSize { get { if (stackable)
 					return stacksize;
 				else
 					return 1;} }
-		public IPrototypeEntity EntityOnPlace { get { return DataManagement.Instance.GetEntity (name) as PrototypeEntity; } }
+		public string Entity { get { return entity; } }
 
 		public PrototypeItem (string Name = null, bool Stackable = true, int StackSize = 64) {
 			name = Name;
@@ -99,6 +101,8 @@ namespace CharacterInventory {
 		}
 
 		public static bool operator ==(PrototypeItem x, PrototypeItem y) {
+			if (object.ReferenceEquals (null, x))
+				return object.ReferenceEquals (null, y);
 			return x.Equals(y);
 		}
 
@@ -107,48 +111,6 @@ namespace CharacterInventory {
 		}
 
 		public static implicit operator bool (PrototypeItem me) {
-			return me != null;
-		}
-	}
-
-	public class PrototypeEntity : IPrototypeEntity {
-		string name;
-		string obj;
-
-		public string Name { get { return name; } }
-		public string Object { get { return obj; } }
-
-		public IPrototypeItem ItemOnPickup { get { return DataManagement.Instance.GetItem (name) as PrototypeItem; } }
-
-		public PrototypeEntity (string Name = null, string Object = null) {
-			name = Name;
-			obj = Object;
-		}
-
-		public override int GetHashCode () {
-			int hash = 0;
-			System.Int32.TryParse (name, out hash);
-			return hash;
-		}
-
-		public override bool Equals (object obj) {
-			if (!(obj is PrototypeEntity))
-				return false;
-			var other = obj as PrototypeEntity;   
-			if (this.GetHashCode () != other.GetHashCode ())
-				return false;
-			return true;
-		}
-
-		public static bool operator ==(PrototypeEntity x, PrototypeEntity y) {
-			return x.Equals(y);
-		}
-
-		public static bool operator !=(PrototypeEntity x, PrototypeEntity y) {
-			return !(x == y);
-		}
-
-		public static implicit operator bool (PrototypeEntity me) {
 			return me != null;
 		}
 	}
@@ -226,6 +188,8 @@ namespace CharacterInventory {
 		}
 
 		public static bool operator ==(ItemStack x, ItemStack y) {
+			if (object.ReferenceEquals (null, x))
+				return object.ReferenceEquals (null, y);
 			return x.Equals (y);
 		}
 

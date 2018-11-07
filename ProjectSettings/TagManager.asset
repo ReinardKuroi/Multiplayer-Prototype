@@ -8,6 +8,7 @@ TagManager:
   - Bullet
   - DashCooldownUI
   - InGameMenu
+  - EHI
   layers:
   - Default
   - TransparentFX
