@@ -24,12 +24,12 @@ GameObject:
   - component: {fileID: 65099289450184988}
   - component: {fileID: 54532124038929308}
   - component: {fileID: 114142814618344002}
-  - component: {fileID: 114920138600166936}
   - component: {fileID: 114124447962093468}
   - component: {fileID: 114577245901802992}
+  - component: {fileID: 114366211431367272}
   m_Layer: 0
   m_Name: Big Cube
-  m_TagString: PickMeUp
+  m_TagString: PickMeUpEHI
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -148,6 +148,18 @@ MonoBehaviour:
   viewIdField: 0
   InstantiationId: 1
   isRuntimeInstantiated: 0
+--- !u!114 &114366211431367272
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1996702939439560}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3202526f2985a94ab7b430b81704a35, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ItemOnPickup: big-cube
 --- !u!114 &114577245901802992
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -161,15 +173,3 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   response: 20
   offset: 3
---- !u!114 &114920138600166936
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1996702939439560}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 24bbcd49430fa6340a014b49231af763, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  state: 0

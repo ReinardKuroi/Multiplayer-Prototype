@@ -1,10 +1,39 @@
 {
     "Items": [
         {
-            "name": "Test Item",
+            "name": "white-sphere",
             "type": "",
             "stackable": true,
-            "stacksize": 64
+            "stacksize": 64,
+			"entity": "Red Sphere"
+        },
+		{
+            "name": "red-sphere",
+            "type": "",
+            "stackable": true,
+            "stacksize": 64,
+			"entity": "White Sphere"
+        },
+		{
+            "name": "small-cube",
+            "type": "",
+            "stackable": true,
+            "stacksize": 64,
+			"entity": "Small Cube"
+        },
+		{
+            "name": "medium-cube",
+            "type": "",
+            "stackable": true,
+            "stacksize": 64,
+			"entity": "Medium Cube"
+        },
+		{
+            "name": "big-cube",
+            "type": "",
+            "stackable": true,
+            "stacksize": 64,
+			"entity": "Big Cube"
         }
     ]
 }

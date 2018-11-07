@@ -172,28 +172,33 @@ public class PlayerController : MonoBehaviour, IMotorUser, IHandUser {
 		RaycastHit hit;
 		Physics.Raycast (transform.position, transform.forward, out hit, 5f);
 		Transform t = hit.transform;
-		if (t != null && t.CompareTag ("EHI")) {
+		if (t != null && t.tag.Contains ("EHI")) {
 			EntityHasItem _e = t.GetComponent<EntityHasItem> ();
 			if (_e != null) {
-				PrototypeItem item = (PrototypeItem)_e.OnInteract ();
-				Debug.LogFormat ("Picked up item {0}", item.Name);
+				PrototypeItem item = _e.OnInteract ();
+				Debug.LogFormat ("Picked up item <color=brown>{0}</color>", item.Name);
 				ItemStack stack = new ItemStack (item.Name, 1);
-				if (CharacterBackpack.Insert (stack) != 1)
+				if (CharacterBackpack.Insert (stack) != 1) {
+					Debug.LogFormat ("<color=yellow>Failed to pick up item</color> <color=brown>{0}</color> <color=yellow>!</color>", item.Name);
 					PhotonNetwork.Instantiate (item.Entity, t.position, t.rotation, 0);
-				foreach (IStack i in CharacterBackpack.Contents)
+				}
+				foreach (ItemStack i in CharacterBackpack.Contents)
 					Debug.LogFormat ("Inventory contents: <color=blue>{0} x {1}</color>", i.Item, i.Size);
 			}
 		}
 	}
 
 	void PutEntity () {
-		IPrototypeItem item = CharacterBackpack.Contents[CharacterBackpack.Contents.Count - 1].Prototype;
+		int i = CharacterBackpack.Contents.Count - 1;
+		if (i < 0)
+			return;
+		PrototypeItem item = CharacterBackpack.Contents[i].Prototype;
 		if (item != null) {
-			PhotonNetwork.Instantiate (item.Entity, transform.position + transform.forward, Quaternion.identity, 0);
+			PhotonNetwork.Instantiate (item.Entity, transform.position + transform.forward * 2, Quaternion.identity, 0);
 			ItemStack stack = new ItemStack (item.Name, 1);
 			CharacterBackpack.Remove (stack);
-			foreach (IStack i in CharacterBackpack.Contents)
-				Debug.LogFormat ("Inventory contents: <color=blue>{0} x {1}</color>", i.Item, i.Size);
+			foreach (ItemStack temp in CharacterBackpack.Contents)
+				Debug.LogFormat ("Inventory contents: <color=blue>{0} x {1}</color>", temp.Item, temp.Size);
 		}
 	}
 

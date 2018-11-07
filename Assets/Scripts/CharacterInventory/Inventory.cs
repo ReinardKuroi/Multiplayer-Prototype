@@ -4,32 +4,34 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace CharacterInventory {
-	public class Inventory : ICharacterInventory {
+	public class Inventory {
 		int size;
 		public string Type { get; protected set; }
-		List<IStack> contents = new List<IStack> ();
-		public List<IStack> Contents { get { return contents; } }
+		List<ItemStack> contents = new List<ItemStack> ();
+		public List<ItemStack> Contents { get { return contents; } }
 		public int Size { get { return size; } }
 
-		public Inventory (int i, string type = null) {
+		public Inventory (int i, string type = "") {
 			size = i;
 			Type = type;
 		}
 
-		public int Insert (IStack stack) { //return amount actually inserted
+		public int Insert (ItemStack stack) { //return amount actually inserted
 			Cleanup ();
 			if (!CanInsert (stack))
 				return 0;
-			if ((stack != null) && (stack.Item != null) && (stack.Size > 0)) {
+			if (stack && (stack.Item != null) && (stack.Item.Length > 0) & (stack.Size > 0)) {
 				int accumulate = 0;
-				IStack similar = contents.FindLast (x => x.Item == stack.Item);
-				if (((similar != null) && (similar.Size >= similar.Prototype.StackSize)) || (similar == null)) {
+				ItemStack similar = contents.FindLast (x => x.Item == stack.Item);
+				if ((similar && (similar.Size >= similar.Prototype.StackSize)) || !similar) {
 					if (contents.Count < size) {
 						Contents.Add (stack);
 						accumulate += stack.Size;
 					}
 				} else {
-					stack.Size = similar.Combine (stack);
+					int i = similar.Combine (stack);
+					accumulate += stack.Size - i;
+					stack.Size = i;
 					accumulate += Insert (stack);
 				}
 				return accumulate;
@@ -37,12 +39,12 @@ namespace CharacterInventory {
 			return 0;
 		}
 
-		public int Remove (IStack stack) { //return amount actually removed
+		public int Remove (ItemStack stack) { //return amount actually removed
 			Cleanup ();
-			if ((stack != null) && (stack.Item != null) && (stack.Size > 0)) {
+			if (stack && (stack.Item != null) && (stack.Item.Length > 0) & (stack.Size > 0)) {
 				int accumulate = 0;
-				IStack similar = contents.FindLast (x => x.Item == stack.Item);
-				if ((similar != null)) {
+				ItemStack similar = contents.FindLast (x => x.Item == stack.Item);
+				if (similar) {
 					stack.Size -= similar.Subtract (stack);
 					accumulate += Remove (stack);
 				}
@@ -51,24 +53,31 @@ namespace CharacterInventory {
 			return 0;
 		}
 
-		public bool CanInsert (IStack stack) {
+		public bool CanInsert (ItemStack stack) {
 			Cleanup ();
-			if (stack.Prototype.Type == this.Type || this.Type == null)
+			if ((stack.Prototype.Type == this.Type) || (this.Type.Length == 0))
 				return true;
+			Debug.LogFormat ("Cannot insert stack of {0} into {1}", stack.Item, this);
 			return false;
 		}
 
 		void Cleanup () {
-			contents.RemoveAll (x => x.Item == null || x.Size == 0);
+			contents.RemoveAll (x => (!x || (x.Item == null) || (x.Item.Length == 0) || (x.Size == 0)));
 		}
 	}
 
-	public class PrototypeItem : IPrototypeItem {
-		protected readonly string name;
-		protected readonly string type;
-		protected readonly bool stackable;
-		protected readonly int stacksize;
-		protected readonly string entity;
+	[Serializable]
+	public class PrototypeItem {
+		[SerializeField]
+		protected string name;
+		[SerializeField]
+		protected string type;
+		[SerializeField]
+		protected bool stackable;
+		[SerializeField]
+		protected int stacksize;
+		[SerializeField]
+		protected string entity;
 
 		public string Name { get { return name; } }
 		public string Type { get { return type; } }
@@ -79,10 +88,12 @@ namespace CharacterInventory {
 					return 1;} }
 		public string Entity { get { return entity; } }
 
-		public PrototypeItem (string Name = null, bool Stackable = true, int StackSize = 64) {
+		public PrototypeItem (string Name = "", string Type = "", bool Stackable = true, int StackSize = 64, string Entity = "") {
 			name = Name;
+			type = Type;
 			stackable = Stackable;
 			stacksize = StackSize;
+			entity = Entity;
 		}
 
 		public override int GetHashCode () {
@@ -115,7 +126,7 @@ namespace CharacterInventory {
 		}
 	}
 
-	public class ItemStack : IStack {
+	public class ItemStack {
 		int size;
 		string item;
 
@@ -131,9 +142,9 @@ namespace CharacterInventory {
 					size = value;
 			}
 		}
-		public IPrototypeItem Prototype {
+		public PrototypeItem Prototype {
 			get {
-				IPrototypeItem i = DataManagement.Instance.GetItem(item);
+				PrototypeItem i = DataManagement.Instance.GetItem(item);
 				if (i != null)
 					return i;
 				else
@@ -141,32 +152,32 @@ namespace CharacterInventory {
 			}
 		}
 
-		public ItemStack (string Item = null, int Size = 0) {
+		public ItemStack (string Item = "", int Size = 0) {
 			this.item = Item;
 			this.Size = Size;
 			Debug.LogFormat ("Created new stack of <color=brown>{0} x {1}</color>", item, size);
 		}
 
-		public int Combine (IStack stack) { //returns whats left to add
+		public int Combine (ItemStack stack) { //returns whats left to add
 			int total = size + stack.Size;
 			size = (total > Prototype.StackSize) ? Prototype.StackSize : total;
 			return total - size;
 		}
 
-		public int Subtract (IStack stack) { //returns whats was removed
+		public int Subtract (ItemStack stack) { //returns whats was removed
 			int result = (size < stack.Size) ? 0 : size - stack.Size;
 			int removed = size - result;
 			size = result;
 			return removed;
 		}
 
-		public bool SetStack (IStack stack) {
+		public bool SetStack (ItemStack stack) {
 			item = stack.Item;
 			size = stack.Size;
 			return true;
 		}
 
-		public bool SwapStack (ref IStack stack) {
+		public bool SwapStack (ref ItemStack stack) {
 			ItemStack temp = new ItemStack();
 			temp.SetStack (this);
 			this.SetStack (stack);
@@ -182,7 +193,7 @@ namespace CharacterInventory {
 			if (!(obj is ItemStack))
 				return false;
 			var other = obj as ItemStack;
-			if (!(this.item == other.Item && this.size == other.Size))
+			if (!((this.item == other.Item) && (this.size == other.Size)))
 				return false;
 			return true;
 		}
@@ -194,11 +205,46 @@ namespace CharacterInventory {
 		}
 
 		public static bool operator !=(ItemStack x, ItemStack y) {
-			return !x.Equals (y);
+			return !(x == y);
 		}
 
 		public static implicit operator bool (ItemStack me) {
 			return me != null;
+		}
+	}
+
+	public class DataManagement {
+		protected static DataManagement instance = new DataManagement ();
+		public static DataManagement Instance { get { return instance; } }
+
+		Dictionary<string, PrototypeItem> itemData = new Dictionary<string, PrototypeItem> ();
+
+		public Dictionary<string, PrototypeItem> ItemData { get { return itemData; } }
+
+		public PrototypeItem GetItem (string name) {
+			string temp = name.ToLowerInvariant ().Replace (" ", "-");
+			if (itemData.ContainsKey (temp)) {
+				PrototypeItem i = itemData [temp];
+				return i;
+			}
+			Debug.LogWarningFormat ("Trying to get prototype : <color=red>{0}</color> , but it's missing!", temp);
+			return null;
+		}
+
+		public void Load () {
+			List<PrototypeItem> items = new List<PrototypeItem> ();
+
+			SaveLoad.LoadFromAssets (ref items, "items.json");
+
+			foreach (PrototypeItem i in items) {
+				string temp = i.Name.ToLowerInvariant ().Replace (" ", "-");
+				if (!itemData.ContainsKey (i.Name)) {
+					itemData.Add (temp, i);
+					Debug.LogFormat ("Loaded prototype : <color=brown>{0}</color>", itemData[temp].Name);
+				}
+				else
+					Debug.LogWarningFormat ("Trying to load a prototype : <color=red>{0}</color> , but a duplicate already exists!", temp);
+			}
 		}
 	}
 }

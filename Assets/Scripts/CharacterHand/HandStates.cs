@@ -29,7 +29,7 @@ namespace CharacterHand {
 			RaycastHit hit;
 			Physics.Raycast (HandTransform.position, HandTransform.forward, out hit, PickUpDistance);
 			InHand = hit.transform;
-			if (InHand != null && InHand.gameObject.CompareTag (ItemTag) && InHand.GetComponent<PickMeUp> ().PickUp (HandTransform))
+			if (InHand != null && InHand.gameObject.tag.Contains (ItemTag) && InHand.GetComponent<PickMeUp> ().PickUp (HandTransform))
 				Debug.LogFormat ("{0} picked up {1}", PController, InHand);
 			else
 				SetState (new EmptyHand (PController));

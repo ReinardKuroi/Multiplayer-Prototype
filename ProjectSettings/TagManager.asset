@@ -9,6 +9,7 @@ TagManager:
   - DashCooldownUI
   - InGameMenu
   - EHI
+  - PickMeUpEHI
   layers:
   - Default
   - TransparentFX

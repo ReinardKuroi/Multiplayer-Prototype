@@ -24,12 +24,12 @@ GameObject:
   - component: {fileID: 65101025564756754}
   - component: {fileID: 54515679172016034}
   - component: {fileID: 114381223165352332}
-  - component: {fileID: 114247421043776090}
   - component: {fileID: 114827099355311698}
   - component: {fileID: 114422082471259446}
+  - component: {fileID: 114454397454160746}
   m_Layer: 0
   m_Name: Small Cube
-  m_TagString: PickMeUp
+  m_TagString: PickMeUpEHI
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -116,18 +116,6 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &114247421043776090
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1489045952303952}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 24bbcd49430fa6340a014b49231af763, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  state: 0
 --- !u!114 &114381223165352332
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -162,6 +150,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   response: 20
   offset: 1
+--- !u!114 &114454397454160746
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1489045952303952}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3202526f2985a94ab7b430b81704a35, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ItemOnPickup: small-cube
 --- !u!114 &114827099355311698
 MonoBehaviour:
   m_ObjectHideFlags: 1
