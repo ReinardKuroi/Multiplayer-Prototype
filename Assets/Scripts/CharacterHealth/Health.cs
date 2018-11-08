@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace CharacterHealth {
-	public class Health : IHealth {
+	public class Health {
 		protected readonly int maxHP;
 		public IHealthUser PCharacter { get; protected set; }
 		public int HP { get; protected set; }
@@ -16,7 +16,7 @@ namespace CharacterHealth {
 			HP = maxHP;
 		}
 
-		public int TakeDamage (IDamage damage) {
+		public virtual int TakeDamage (Damage damage) {
 			int reduction = 0;
 			int damagetaken = 0;
 			if (PCharacter.CharacterArmor.DamageReductionPercentage.TryGetValue (damage.Type, out reduction))
@@ -32,7 +32,7 @@ namespace CharacterHealth {
 			return HP;
 		}
 
-		public int Heal (int heal) {
+		public virtual int Heal (int heal) {
 			heal = (HP + heal > MaxHP) ? MaxHP - HP : heal;
 			HP += heal;
 			Debug.LogFormat ("Character <b><color=blue>{0}</color></b> was healed for <color=green>{1}</color>", PCharacter, heal);

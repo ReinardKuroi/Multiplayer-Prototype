@@ -4,9 +4,10 @@ using UnityEngine;
 
 namespace CharacterHealth {
 	public interface IHealthUser {
-		IHealth CharacterHP { get; }
-		IArmor CharacterArmor { get; }
+		Health CharacterHP { get; }
+		Armor CharacterArmor { get; set; }
 
+		int TakeDamage (Damage damage);
 		void Die ();
 	}
 }

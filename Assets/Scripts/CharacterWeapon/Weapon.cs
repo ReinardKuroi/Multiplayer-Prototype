@@ -1,8 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using CharacterHealth;
 
-namespace CharacterHealth {
+namespace CharacterWeapon {
 	public class Weapon {
 		public Damage WeaponDamage { get; protected set; }
 
@@ -11,11 +12,18 @@ namespace CharacterHealth {
 		}
 
 		public virtual void Attack (GetTarget f) {
-			IHealthUser user = f ();
-			if (user == null)
+			IHealthUser target = f ();
+			if (target == null)
 				return;
 
-			user.CharacterHP.TakeDamage (WeaponDamage);
+			target.TakeDamage (WeaponDamage);
+		}
+
+		public virtual void Attack (IHealthUser target) {
+			if (target == null)
+				return;
+
+			target.TakeDamage (WeaponDamage);
 		}
 	}
 

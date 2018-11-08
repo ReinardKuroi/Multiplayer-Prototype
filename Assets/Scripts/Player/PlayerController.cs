@@ -6,14 +6,14 @@ using UnityEngine.UI;
 using CharacterMotor;
 using CharacterHand;
 using CharacterInventory;
-using CharacterHealth;
 using IManager;
+using CharacterWeapon;
 
 using Photon.Pun;
 using Photon.Realtime;
 
 [RequireComponent(typeof(CharacterController))]
-public class PlayerController : MonoBehaviour, IMotorUser, IHandUser, IHealthUser {
+public class PlayerController : MonoBehaviour, IMotorUser, IHandUser {
 
 	[Tooltip("Local player instance")]
 	public static GameObject LocalPlayerInstance;
@@ -30,6 +30,10 @@ public class PlayerController : MonoBehaviour, IMotorUser, IHandUser, IHealthUse
 	public LayerMask Ground;
 	[Tooltip("Reference to a name UI above player's head")]
 	public GameObject playerNameUI;
+	[Tooltip("Reference to player's melee weapon")]
+	public GameObject weapon;
+
+	Melee sword;
 
 	Charger Dasher;
 
@@ -53,9 +57,6 @@ public class PlayerController : MonoBehaviour, IMotorUser, IHandUser, IHealthUse
 
 	public Inventory CharacterBackpack { get; set; }
 
-	public IHealth CharacterHP { get; set; }
-	public IArmor CharacterArmor { get; set; }
-
 	void Awake () {
 		photonView = GetComponent<PhotonView> ();
 		if (photonView.IsMine)
@@ -78,11 +79,7 @@ public class PlayerController : MonoBehaviour, IMotorUser, IHandUser, IHealthUse
 			if (Dasher == null)
 				Dasher = gameObject.AddComponent<Charger> ();
 			CharacterBackpack = new Inventory (5);
-			CharacterHP = new Health (this);
-			CharacterArmor = new Armor ();
-			CharacterHP.TakeDamage += () => {
-				photonView.RPC ("OnDamage", RpcTarget.Others);
-			};
+			sword = weapon.GetComponent<Melee> ();
 		}
 	}
 
@@ -100,12 +97,6 @@ public class PlayerController : MonoBehaviour, IMotorUser, IHandUser, IHealthUse
 		CharacterPosition.Transition (IsGrounded);
 	}
 
-	void Die () {
-		transform.position = new Vector3 (0f, 1f, 0f);
-		Debug.LogFormat ("Player {0} went commit died!~", photonView.Owner.NickName);
-		CharacterHP.Heal (CharacterHP.MaxHP);
-	}
-
 	void SetInputCommands () {
 		iManager.Init ();
 		iManager.AddCommand (KeyCode.Space, JumpCommand);
@@ -115,17 +106,27 @@ public class PlayerController : MonoBehaviour, IMotorUser, IHandUser, IHealthUse
 		iManager.AddCommand (KeyCode.Mouse1, AltInteractCommand);
 		iManager.AddCommand (KeyCode.E, PickEntity);
 		iManager.AddCommand (KeyCode.X, PutEntity);
+		iManager.AddCommand (KeyCode.V, Melee);
+	}
+
+	public void Melee () {
+		if (Menu.InGame) {
+			sword.Attack ();
+			photonView.RPC ("PlayAudio", RpcTarget.All, "slash");
+		}
 	}
 
 	public void JumpCommand () {
-		if (Menu.InGame)
+		if (Menu.InGame) {
 			CharacterPosition.Jump ();
+			photonView.RPC ("PlayAudio", RpcTarget.All, "boink");
+		}
 	}
 
 	public void BlinkCommand () {
 		if (Menu.InGame && (Dasher.Charges > 0)) {
 			CharacterPosition.Blink ();
-			photonView.RPC("PlayDashAudio", RpcTarget.All, "teleports-behind-you");
+			photonView.RPC("PlayAudio", RpcTarget.All, "teleports-behind-you");
 			Dasher.Use();
 		}
 	}
@@ -215,11 +216,6 @@ public class PlayerController : MonoBehaviour, IMotorUser, IHandUser, IHealthUse
 			foreach (ItemStack temp in CharacterBackpack.Contents)
 				Debug.LogFormat ("Inventory contents: <color=blue>{0} x {1}</color>", temp.Item, temp.Size);
 		}
-	}
-
-	[PunRPC]
-	void OnDamage () {
-		
 	}
 
 	[PunRPC]

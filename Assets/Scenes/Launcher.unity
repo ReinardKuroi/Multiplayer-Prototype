@@ -840,7 +840,15 @@ MonoBehaviour:
 
     Right click - Attract/throw
 
-    M - Open menu'
+    E - Take
+
+    X - Drop
+
+    M - Open menu
+
+    1/2/3 - Select Armor
+
+    V - Melee attack'
 --- !u!222 &1495887343
 CanvasRenderer:
   m_ObjectHideFlags: 0
