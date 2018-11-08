@@ -31,11 +31,18 @@ public class GameManager : MonoBehaviourPunCallbacks {
 		}
 	}
 
+	void Update () {
+		if (PlayerController.LocalPlayerInstance == null)
+			LeaveRoom ();
+	}
+
 	public override void OnLeftRoom () {
 		SceneManager.LoadScene (0);
 	}
 
 	public void LeaveRoom () {
+		Cursor.lockState = CursorLockMode.None;
+		Cursor.visible = true;
 		PhotonNetwork.LeaveRoom ();
 	}
 

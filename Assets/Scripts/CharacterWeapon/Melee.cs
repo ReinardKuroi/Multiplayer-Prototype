@@ -15,13 +15,25 @@ namespace CharacterWeapon {
 			attackAnimation = GetComponent<Animation> ();
 		}
 
-		public void Attack () {
-			if (!attackAnimation.isPlaying)
+		public bool Attack () {
+			if (!attackAnimation.isPlaying) {
 				attackAnimation.Play ("SwordMeleeAttack");
+				return true;
+			}
+			return false;
 		}
 
 		void OnTriggerEnter (Collider other) {
-			knife.Attack (() => { return other.gameObject.GetComponent<IHealthUser> (); });
+			Debug.LogFormat ("<color=red>The blade of the weapon hit a {0}!</color>", other.gameObject.name);
+			knife.Attack (() => {
+				GameObject g = other.gameObject;
+				Debug.LogFormat ("<color=red><b>Trying to attack a {0}</b></color>", g.name);
+				return g.GetComponent<IHealthUser> ();;
+			});
+		}
+
+		void OntriggerExit (Collider other) {
+			Debug.LogFormat ("<color=red>The blade of the weapon left the substance of a {0}!</color>", other.gameObject.name);
 		}
 	}
 }

@@ -27,8 +27,12 @@ namespace IManager {
 		}
 
 		public void AddCommand (KeyCode key, Command command) {
-			CommandList.Add (key, command);
-			Debug.LogFormat ("Added command {0} called on key {1}", command.Method, key);
+			if (!CommandList.ContainsKey (key)) {
+				CommandList.Add (key, command);
+				Debug.LogFormat ("Added command {0} called on key {1}", command.Method, key);
+			} else {
+				Debug.LogWarningFormat ("Trying to add a command to key : <color=red>{0}</color> , but there is already another command assigned!", key);
+			}
 		}
 	}
 

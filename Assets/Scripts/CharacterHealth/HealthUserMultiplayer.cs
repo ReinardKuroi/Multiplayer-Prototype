@@ -60,7 +60,8 @@ namespace CharacterHealth {
 		public override void Die () {
 			if (photonView.InstantiationId == 0) {
 				base.Die ();
-			} else if (PhotonNetwork.IsMasterClient) {
+			} else if (photonView.IsMine) {
+				Debug.LogFormat ("<color=pink>{0} has commit die~</color>", name);
 				PhotonNetwork.Destroy (this.gameObject);
 			}
 		}

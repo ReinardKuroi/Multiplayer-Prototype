@@ -10,6 +10,7 @@ TagManager:
   - InGameMenu
   - EHI
   - PickMeUpEHI
+  - SpectatorCamera
   layers:
   - Default
   - TransparentFX
@@ -20,7 +21,7 @@ TagManager:
   - 
   - 
   - PostProcessing
-  - 
+  - Damage
   - 
   - 
   - 

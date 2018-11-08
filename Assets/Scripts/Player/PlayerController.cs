@@ -20,7 +20,7 @@ public class PlayerController : MonoBehaviour, IMotorUser, IHandUser {
 
 	public PhotonView photonView;
 
-	[Tooltip("PLayer height, used for ground check")]
+	[Tooltip("Player height, used for ground check")]
 	public float height = 0.6f;
 	[Tooltip("Camera rotation speed")]
 	public float cameraSpeed = 5f;
@@ -66,8 +66,12 @@ public class PlayerController : MonoBehaviour, IMotorUser, IHandUser {
 
 	void Start () {
 		DataManagement.Instance.Load ();
-		SetCamera ();
 		SetNameUI ();
+		GameObject camera = transform.Find ("Cube/Main Camera").gameObject;
+		if (photonView.IsMine)
+			camera.tag = "MainCamera";
+		else
+			Destroy (camera);
 		if (photonView.IsMine) {
 			iManager = InputManager.Instance;
 			SetInputCommands ();
@@ -87,7 +91,6 @@ public class PlayerController : MonoBehaviour, IMotorUser, IHandUser {
 		if (!photonView.IsMine && PhotonNetwork.IsConnected)
 			return;
 		
-		iManager.HandleInput ();
 		if (Menu.InGame) {
 			CameraMovement ();
 			Vector2 input = new Vector2 (Input.GetAxisRaw ("Horizontal"), Input.GetAxisRaw ("Vertical")).normalized;
@@ -111,8 +114,8 @@ public class PlayerController : MonoBehaviour, IMotorUser, IHandUser {
 
 	public void Melee () {
 		if (Menu.InGame) {
-			sword.Attack ();
-			photonView.RPC ("PlayAudio", RpcTarget.All, "slash");
+			if (sword.Attack ())
+				photonView.RPC ("PlayAudio", RpcTarget.All, "slash");
 		}
 	}
 
@@ -169,14 +172,6 @@ public class PlayerController : MonoBehaviour, IMotorUser, IHandUser {
 				return true;
 		}
 		return false;
-	}
-
-	void SetCamera () {
-		GameObject camera = transform.Find ("Main Camera").gameObject;
-		if (photonView.IsMine)
-			camera.tag = "MainCamera";
-		else
-			Destroy (camera);
 	}
 
 	void SetNameUI () {

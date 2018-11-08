@@ -2,17 +2,21 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using CharacterHealth;
 
 public class PlayerNameDisplay : MonoBehaviour {
 
 	public float offsetY = 50f;
 	public Text PlayerName;
+	public Image PlayerHealth;
 
 	float _characterHeight = 0.6f;
 	Transform _targetTransform;
 	PlayerController _target;
 	Vector3 offset;
 	Vector3 _targetPosition;
+
+	IHealthUser _targetHealth;
 
 	public void SetTarget (PlayerController target) {
 		if (target == null)
@@ -23,6 +27,8 @@ public class PlayerNameDisplay : MonoBehaviour {
 			PlayerName.text = _target.photonView.Owner.NickName;
 
 		_targetTransform = _target.transform;
+
+		_targetHealth = _target.gameObject.GetComponent<IHealthUser> ();
 	}
 
 	void Awake () {
@@ -35,20 +41,27 @@ public class PlayerNameDisplay : MonoBehaviour {
 			Destroy (this.gameObject);
 			return;
 		}
+
+		PlayerHealth.fillAmount = 0.5f * (float)_targetHealth.CharacterHP.HP / _targetHealth.CharacterHP.MaxHP;
 	}
 
 	void LateUpdate () {
 		if (_targetTransform != null) {
 			_targetPosition = _targetTransform.position;
 			_targetPosition.y += _characterHeight;
-			Vector3 ui = Camera.main.WorldToScreenPoint (_targetPosition);
-			if (ui.z < 0)
+			Vector3 ui = Vector3.zero;
+			if (Camera.main != null) {
+				ui = Camera.main.WorldToScreenPoint (_targetPosition);
+			} 
+			if (ui.z < 0) {
 				PlayerName.enabled = false;
-			else {
+				PlayerHealth.enabled = false;
+			} else {
 				PlayerName.enabled = true;
-				this.transform.position = Camera.main.WorldToScreenPoint (_targetPosition) + offset;
-			}
+				PlayerHealth.enabled = true;
 
+				this.transform.position = ui + offset;
+			}
 		}
 	}
 }
